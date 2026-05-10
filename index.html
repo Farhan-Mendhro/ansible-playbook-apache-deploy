@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ansible Playbook — DevOps Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;600&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:     #0c0c0c;
+      --paper:   #f2ede6;
+      --cream:   #e8e0d4;
+      --red:     #d63030;
+      --red-dim: #a82020;
+      --gold:    #c8922a;
+      --steel:   #4a5568;
+      --muted:   #8a8078;
+      --white:   #faf8f4;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── TOP TICKER ── */
+    .ticker-wrap {
+      background: var(--ink);
+      overflow: hidden;
+      padding: 8px 0;
+      border-bottom: 3px solid var(--red);
+    }
+
+    .ticker-inner {
+      display: flex;
+      gap: 0;
+      animation: ticker 28s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--red);
+      letter-spacing: 0.15em;
+      padding: 0 40px;
+      text-transform: uppercase;
+    }
+
+    .ticker-item span { color: #555; margin: 0 12px; }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      padding: 36px 60px 28px;
+      border-bottom: 2px solid var(--ink);
+      gap: 20px;
+      animation: slideDown 0.5s ease both;
+    }
+
+    .header-left {}
+
+    .header-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .site-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+
+    .site-title .accent { color: var(--red); }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .header-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 2;
+      letter-spacing: 0.05em;
+    }
+
+    .header-meta strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ── HERO BAND ── */
+    .hero-band {
+      background: var(--ink);
+      padding: 72px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      animation: fadeIn 0.6s ease 0.1s both;
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 7vw, 5.5rem);
+      line-height: 0.95;
+      color: var(--white);
+      letter-spacing: 0.01em;
+    }
+
+    .hero-headline .line-red { color: var(--red); display: block; }
+    .hero-headline .line-gold { color: var(--gold); display: block; }
+
+    .hero-right {}
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: #888;
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 28px;
+      border-left: 3px solid var(--red);
+      padding-left: 20px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 5px 12px;
+      border: 1px solid #333;
+      color: #666;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .tag:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── SECTION WRAPPER ── */
+    .section { padding: 64px 60px; }
+    .section + .section { border-top: 2px solid var(--cream); }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--red);
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      margin-bottom: 40px;
+      color: var(--ink);
+    }
+
+    /* ── WHAT IS SECTION ── */
+    .what-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--ink);
+      border: 2px solid var(--ink);
+    }
+
+    .what-cell {
+      background: var(--paper);
+      padding: 32px 36px;
+      transition: background 0.2s;
+    }
+
+    .what-cell:hover { background: var(--cream); }
+
+    .cell-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .cell-title {
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .cell-desc {
+      font-size: 0.9rem;
+      color: var(--steel);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ── PLAYBOOK FILE ── */
+    .playbook-section { background: var(--ink); }
+
+    .playbook-section .section-label { color: #555; }
+    .playbook-section .section-label::before { background: var(--gold); }
+    .playbook-section .section-title { color: var(--white); }
+
+    .playbook-outer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .playbook-window {
+      border: 1px solid #222;
+      overflow: hidden;
+    }
+
+    .pw-bar {
+      background: #111;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #222;
+    }
+
+    .pw-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .pw-r { background: #ff5f57; }
+    .pw-y { background: #febc2e; }
+    .pw-g { background: #28c840; }
+    .pw-filename {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: #555;
+      margin-left: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    .pw-body {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      background: #0a0a0a;
+    }
+
+    .pw-nums {
+      padding: 16px 0;
+      background: #0d0d0d;
+      border-right: 1px solid #1a1a1a;
+      text-align: center;
+    }
+
+    .pw-nums span {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      color: #333;
+      line-height: 1.9;
+      padding: 0 6px;
+    }
+
+    .pw-code {
+      padding: 16px 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+
+    .y  { color: var(--gold); }
+    .g  { color: #5fdb85; }
+    .b  { color: #60b8ff; }
+    .r  { color: #ff7070; }
+    .w  { color: #ccc; }
+    .dim{ color: #444; }
+
+    .playbook-explain {
+      padding-top: 8px;
+    }
+
+    .explain-item {
+      display: flex;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid #222;
+    }
+
+    .explain-item:last-child { border-bottom: none; }
+
+    .explain-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--red);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 28px;
+    }
+
+    .explain-content {}
+
+    .explain-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .explain-text {
+      font-size: 0.82rem;
+      color: #666;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* ── STEPS SECTION ── */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .step-row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--cream);
+      padding: 20px 28px;
+      gap: 28px;
+      transition: all 0.2s;
+      cursor: default;
+    }
+
+    .step-row:hover {
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .step-row:hover .step-num { color: var(--red); }
+    .step-row:hover .step-title { color: var(--white); }
+    .step-row:hover .step-cmd { color: #555; border-color: #333; }
+    .step-row:hover .step-arrow { color: var(--red); }
+
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      color: var(--cream);
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .step-body {}
+
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+
+    .step-cmd {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      border: 1px solid var(--cream);
+      padding: 3px 10px;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+
+    .step-arrow {
+      font-size: 1.2rem;
+      color: var(--cream);
+      transition: color 0.2s;
+    }
+
+    /* ── TASK CARDS ── */
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--ink);
+      border: 2px solid var(--ink);
+    }
+
+    .task-card {
+      background: var(--paper);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+
+    .task-card:hover { background: var(--cream); }
+
+    .task-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+    }
+
+    .task-card.c1::before { background: var(--red); }
+    .task-card.c2::before { background: var(--gold); }
+    .task-card.c3::before { background: #4a9eff; }
+    .task-card.c4::before { background: #5fdb85; }
+    .task-card.c5::before { background: #c084fc; }
+    .task-card.c6::before { background: var(--red); }
+
+    .task-icon { font-size: 1.6rem; margin-bottom: 12px; }
+    .task-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .task-module {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--red);
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .task-desc {
+      font-size: 0.82rem;
+      color: var(--steel);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      border-top: 3px solid var(--red);
+      padding: 32px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--white);
+      letter-spacing: 0.05em;
+    }
+
+    .footer-brand span { color: var(--red); }
+
+    .footer-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      color: #444;
+      letter-spacing: 0.08em;
+      text-align: right;
+      line-height: 2;
+    }
+
+    .footer-meta strong { color: #666; }
+
+    /* ── DIVIDER ── */
+    .ink-divider {
+      height: 3px;
+      background: linear-gradient(90deg, var(--red), var(--gold), var(--ink));
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header, .section { padding-left: 24px; padding-right: 24px; }
+      .hero-band { grid-template-columns: 1fr; padding: 48px 24px; }
+      .what-grid, .tasks-grid { grid-template-columns: 1fr; }
+      .playbook-outer { grid-template-columns: 1fr; }
+      .step-row { grid-template-columns: 56px 1fr auto; }
+      footer { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span class="ticker-item">Ansible Playbook <span>///</span></span>
+      <span class="ticker-item">Infrastructure Automation <span>///</span></span>
+      <span class="ticker-item">AWS EC2 Deployment <span>///</span></span>
+      <span class="ticker-item">DevOps Practice Project <span>///</span></span>
+      <span class="ticker-item">YAML · Modules · Tasks · Handlers <span>///</span></span>
+      <span class="ticker-item">Ansible Playbook <span>///</span></span>
+      <span class="ticker-item">Infrastructure Automation <span>///</span></span>
+      <span class="ticker-item">AWS EC2 Deployment <span>///</span></span>
+      <span class="ticker-item">DevOps Practice Project <span>///</span></span>
+      <span class="ticker-item">YAML · Modules · Tasks · Handlers <span>///</span></span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="header-tag">// DevOps Practice — Vol. 02</div>
+      <div class="site-title">ANSIBLE<br/><span class="accent">PLAYBOOK</span></div>
+    </div>
+    <div class="header-right">
+      <div class="header-meta">
+        CONTROL NODE <strong>WSL / Ubuntu</strong><br/>
+        TARGET <strong>AWS EC2 Instances</strong><br/>
+        FORMAT <strong>YAML</strong><br/>
+        STATUS <strong style="color:var(--red)">● DEPLOYED</strong>
+      </div>
+    </div>
+  </header>
+
+  <div class="ink-divider"></div>
+
+  <!-- HERO BAND -->
+  <div class="hero-band">
+    <div>
+      <div class="hero-headline">
+        <span>AUTOMATE</span>
+        <span class="line-red">EVERYTHING.</span>
+        <span class="line-gold">MANUALLY</span>
+        <span>DO NOTHING.</span>
+      </div>
+    </div>
+    <div class="hero-right">
+      <p class="hero-desc">
+        A hands-on Ansible Playbook project deploying a web application to multiple AWS EC2 instances — covering tasks, modules, handlers, and idempotent automation from a WSL control node.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">ansible</span>
+        <span class="tag">yaml</span>
+        <span class="tag">aws ec2</span>
+        <span class="tag">apache2</span>
+        <span class="tag">wsl</span>
+        <span class="tag">automation</span>
+        <span class="tag">idempotent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT IS A PLAYBOOK -->
+  <section class="section">
+    <div class="section-label">01 — Concepts</div>
+    <div class="section-title">What Is a Playbook?</div>
+    <div class="what-grid">
+      <div class="what-cell">
+        <div class="cell-num">01</div>
+        <div class="cell-title">Playbook</div>
+        <div class="cell-desc">A YAML file that defines a set of <em>plays</em> — each play maps a group of hosts to a list of tasks to execute in order.</div>
+      </div>
+      <div class="what-cell">
+        <div class="cell-num">02</div>
+        <div class="cell-title">Task</div>
+        <div class="cell-desc">A single unit of work in a play. Each task calls an Ansible <em>module</em> (like apt, copy, service) to do something on the remote host.</div>
+      </div>
+      <div class="what-cell">
+        <div class="cell-num">03</div>
+        <div class="cell-title">Module</div>
+        <div class="cell-desc">Built-in tools Ansible uses to perform actions — install packages, copy files, manage services, create users, and much more.</div>
+      </div>
+      <div class="what-cell">
+        <div class="cell-num">04</div>
+        <div class="cell-title">Idempotency</div>
+        <div class="cell-desc">Running a playbook multiple times produces the same result. Ansible only makes changes when the system is not already in the desired state.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYBOOK FILE -->
+  <section class="section playbook-section">
+    <div class="section-label">02 — The Playbook</div>
+    <div class="section-title">playbook.yml</div>
+    <div class="playbook-outer">
+
+      <div class="playbook-window">
+        <div class="pw-bar">
+          <div class="pw-dot pw-r"></div>
+          <div class="pw-dot pw-y"></div>
+          <div class="pw-dot pw-g"></div>
+          <span class="pw-filename">ansible-playbook-project/deploy.yml</span>
+        </div>
+        <div class="pw-body">
+          <div class="pw-nums">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+            <span>16</span><span>17</span><span>18</span><span>19</span>
+          </div>
+          <div class="pw-code">
+<span class="dim">---</span><br/>
+<span class="dim">---</span><br/>
+<br/>
+<span class="w">- </span><span class="y">host</span><span class="w">: </span><span class="b">all</span><br/>
+&nbsp;&nbsp;<span class="y">become</span><span class="w">: </span><span class="r">true</span><br/>
+&nbsp;&nbsp;<span class="y">tasks</span><span class="w">:</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="w">- </span><span class="y">name</span><span class="w">: </span><span class="g">Install apache httpd</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">ansible.builtin.apt</span><span class="w">:</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">name</span><span class="w">: </span><span class="g">apache2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">state</span><span class="w">: </span><span class="g">present</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">update_cache</span><span class="w">: </span><span class="r">yes</span><br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="w">- </span><span class="y">name</span><span class="w">: </span><span class="g">Copy file with owner and permissions</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">ansible.builtin.copy</span><span class="w">:</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">src</span><span class="w">: </span><span class="g">index.html</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">dest</span><span class="w">: </span><span class="g">/var/www/html</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">owner</span><span class="w">: </span><span class="g">root</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">group</span><span class="w">: </span><span class="g">root</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="y">mode</span><span class="w">: </span><span class="g">'0644'</span><br/>
+          </div>
+        </div>
+      </div>
+
+      <div class="playbook-explain">
+        <div class="explain-item">
+          <div class="explain-num">1</div>
+          <div class="explain-content">
+            <div class="explain-title">host: all</div>
+            <div class="explain-text">Targets <strong style="color:#aaa">every host</strong> in the inventory file — both EC2 instances will receive all the tasks in this play.</div>
+          </div>
+        </div>
+        <div class="explain-item">
+          <div class="explain-num">2</div>
+          <div class="explain-content">
+            <div class="explain-title">become: true</div>
+            <div class="explain-text">Elevates privileges to <strong style="color:#aaa">sudo</strong> so Ansible can install packages and write files to system directories on the remote hosts.</div>
+          </div>
+        </div>
+        <div class="explain-item">
+          <div class="explain-num">3</div>
+          <div class="explain-content">
+            <div class="explain-title">ansible.builtin.apt</div>
+            <div class="explain-text">The fully-qualified module name for the apt package manager. Installs <code style="color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.8em">apache2</code> and updates the cache in a single task.</div>
+          </div>
+        </div>
+        <div class="explain-item">
+          <div class="explain-num">4</div>
+          <div class="explain-content">
+            <div class="explain-title">ansible.builtin.copy</div>
+            <div class="explain-text">Copies <code style="color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.8em">index.html</code> from your WSL machine into <code style="color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.8em">/var/www/html</code> on the EC2 server — Apache's default web root.</div>
+          </div>
+        </div>
+        <div class="explain-item">
+          <div class="explain-num">5</div>
+          <div class="explain-content">
+            <div class="explain-title">owner, group, mode</div>
+            <div class="explain-text">Sets file permissions on the copied file. <code style="color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:0.8em">0644</code> means the owner can read/write, everyone else can only read — standard for web files.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="section">
+    <div class="section-label">03 — Execution</div>
+    <div class="section-title">How to Run It</div>
+    <div class="steps-list">
+      <div class="step-row">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Verify Inventory Connectivity</div>
+          <div class="step-cmd">ansible all -i inventory.ini -m ping</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Dry Run First (Check Mode)</div>
+          <div class="step-cmd">ansible-playbook -i inventory.ini deploy.yml --check</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Run the Playbook</div>
+          <div class="step-cmd">ansible-playbook -i inventory.ini deploy.yml</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">Verify in Browser</div>
+          <div class="step-cmd">http://&lt;ec2-public-ip&gt;</div>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <div class="step-title">Run Again — Nothing Should Change</div>
+          <div class="step-cmd">ansible-playbook -i inventory.ini deploy.yml</div>
+        </div>
+        <div class="step-arrow">✓</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASKS USED -->
+  <section class="section" style="background:var(--cream)">
+    <div class="section-label">04 — Modules Used</div>
+    <div class="section-title">Ansible Modules in This Playbook</div>
+    <div class="tasks-grid">
+      <div class="task-card c1">
+        <div class="task-icon">📦</div>
+        <div class="task-title">ansible.builtin.apt</div>
+        <div class="task-module">Package Manager</div>
+        <div class="task-desc">Installs packages on Debian/Ubuntu systems. Used here to install <code>apache2</code> with <code>state: present</code> and <code>update_cache: yes</code> in one task.</div>
+      </div>
+      <div class="task-card c2">
+        <div class="task-icon">📋</div>
+        <div class="task-title">ansible.builtin.copy</div>
+        <div class="task-module">File Transfer</div>
+        <div class="task-desc">Copies <code>index.html</code> from your WSL control node into <code>/var/www/html</code> on the EC2 server — Apache's default web root directory.</div>
+      </div>
+      <div class="task-card c3">
+        <div class="task-icon">🔐</div>
+        <div class="task-title">owner &amp; group</div>
+        <div class="task-module">File Ownership</div>
+        <div class="task-desc">Sets the Unix owner and group of the copied file to <code>root</code> — ensuring the web server has proper access to serve the file.</div>
+      </div>
+      <div class="task-card c4">
+        <div class="task-icon">🔢</div>
+        <div class="task-title">mode: '0644'</div>
+        <div class="task-module">File Permissions</div>
+        <div class="task-desc">Octal permission — owner can read &amp; write, group and others can only read. This is the standard safe permission for web-served files.</div>
+      </div>
+      <div class="task-card c5">
+        <div class="task-icon">⬆️</div>
+        <div class="task-title">become: true</div>
+        <div class="task-module">Privilege Escalation</div>
+        <div class="task-desc">Runs all tasks as <code>sudo</code> on the remote host — required for installing packages and writing into system directories like <code>/var/www/html</code>.</div>
+      </div>
+      <div class="task-card c6">
+        <div class="task-icon">🌐</div>
+        <div class="task-title">host: all</div>
+        <div class="task-module">Host Targeting</div>
+        <div class="task-desc">Runs the play against every host defined in the inventory file — no need to specify a group, all managed EC2 nodes receive the tasks.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-brand">ANSIBLE <span>PLAYBOOK</span></div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#333;letter-spacing:0.1em;margin-top:4px;">
+        DEVOPS PRACTICE — VOL. 02
+      </div>
+    </div>
+    <div class="footer-meta">
+      CONTROL NODE <strong>WSL / Ubuntu</strong><br/>
+      MANAGED NODES <strong>AWS EC2 (t2.micro)</strong><br/>
+      WEB SERVER <strong>Apache2</strong>
+    </div>
+  </footer>
+
+</body>
+</html>
